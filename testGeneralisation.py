@@ -7,7 +7,7 @@ from diversityScore import DiversityScore
 import pickle as pkl
 from datasetUtils import generateSubsetIndex, generateSubsetIndexDiverse
 import numpy as np
-from trainResNet import runTraining
+from resnetTrainUtils import runTraining
 import torchvision.transforms as transforms
 import medmnist
 from medmnist import INFO

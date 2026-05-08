@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 import os
 import numpy as np
+import pandas as pd
 
 
 class CheXpertDataset(Dataset):
@@ -37,6 +38,11 @@ class CheXpertDataset(Dataset):
         
         self.file_names = files
 
+        # extract the labels from the csv file using pandas and store them as a numpy array alongside image ids
+        df = pd.read_csv(self.labels_path)
+        self.labels = df['Pleural Effusion'].values
+        self.ids = df['image_id'].values
+
         
     def __len__(self):
         return len(self.file_names)
@@ -52,8 +58,9 @@ class CheXpertDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        # get the label from the csv file
-        label = 0
+        # get the pleural effusion label for this image first using the idx to get the image id, then using the image id to get the label
+        label_idx = np.where(self.ids == idx)[0]
+        label = self.labels[label_idx]
         
         return image, label
     
@@ -62,6 +69,8 @@ class CheXpertDataset(Dataset):
 root_dir = '/Users/katephd/Documents/data/CheXpertSmall'
 dataset = CheXpertDataset(root_dir, split='train', transform=transforms.ToTensor())
 print(len(dataset))
-print(dataset[0][0].shape)
-print(dataset[0][1])
+
+# print the label for the first 20 images in the dataset
+for i in range(20):
+    print(dataset[i][1])
 

@@ -61,16 +61,23 @@ class CheXpertDataset(Dataset):
         # get the pleural effusion label for this image first using the idx to get the image id, then using the image id to get the label
         label_idx = np.where(self.ids == idx)[0]
         label = self.labels[label_idx]
+
+        # check that we have a label for this image
+        if len(label) == 0:
+            raise ValueError(f'No label found for image with id {idx}')
         
         return image, label
     
 
-# Test the CheXpertDataset class
-root_dir = '/Users/katephd/Documents/data/CheXpertSmall'
-dataset = CheXpertDataset(root_dir, split='train', transform=transforms.ToTensor())
-print(len(dataset))
+def main():
+    # Test the CheXpertDataset class
+    root_dir = '/Users/katephd/Documents/data/CheXpertSmall'
+    dataset = CheXpertDataset(root_dir, split='train', transform=transforms.ToTensor())
+    print(len(dataset))
 
-# print the label for the first 20 images in the dataset
-for i in range(20):
-    print(dataset[i][1])
+    # print the label for the first 20 images in the dataset
+    for i in range(20):
+        print(dataset[i][1])
 
+if __name__ == "__main__":
+    main()

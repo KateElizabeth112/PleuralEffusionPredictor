@@ -6,22 +6,20 @@ from collections import namedtuple
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import accuracy_score
 
-from medmnist.info import INFO, DEFAULT_ROOT
-
 Metrics = namedtuple("Metrics", ["AUC", "ACC"])
 
 
 class Evaluator:
-    def __init__(self, flag, split, size=None, root=DEFAULT_ROOT):
-        self.flag = flag
+    def __init__(self, task, split, image_size=None, root=None):
         self.split = split
+        self.task = task
 
-        if (size is None) or (size == 28):
+        if (image_size is None) or (image_size == 28):
             self.size = 28
             self.size_flag = ""
         else:
-            self.size = size
-            self.size_flag = f"_{size}"
+            self.size = image_size
+            self.size_flag = f"_{image_size}"
 
         if root is not None and os.path.exists(root):
             self.root = root
@@ -31,19 +29,14 @@ class Evaluator:
                 + "Please specify and create the `root` directory manually."
             )
 
-        self.info = INFO[self.flag]
-
-
     def evaluate(self, y_score, y_targets, save_folder=None, run=None):
         # convert targets to uint8
-
         y_targets = y_targets.astype(np.uint8)
 
         assert y_score.shape[0] == y_targets.shape[0]
 
-        task = self.info["task"]
-        auc = getAUC(y_targets, y_score, task)
-        acc = getACC(y_targets, y_score, task)
+        auc = getAUC(y_targets, y_score, self.task)
+        acc = getACC(y_targets, y_score, self.task)
         metrics = Metrics(auc, acc)
 
         return metrics

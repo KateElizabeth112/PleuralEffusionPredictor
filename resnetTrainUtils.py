@@ -4,7 +4,6 @@ import time
 from collections import OrderedDict
 from copy import deepcopy
 
-import medmnist
 import numpy as np
 import PIL
 import torch
@@ -13,31 +12,35 @@ import torch.optim as optim
 import torch.utils.data as data
 from torch.utils.data import Subset
 import torchvision.transforms as transforms
-from medmnist import INFO
 from evaluatorLocal import Evaluator
 from models import ResNet18, ResNet50
 from torchvision.models import resnet18, resnet50
 from tqdm import trange
 
 
-def runTraining(train_dataset, val_dataset, test_dataset, data_flag, output_root, num_epochs, batch_size, size, model_flag, resize):
+def runTraining(train_dataset, val_dataset, test_dataset, output_dir, num_epochs, batch_size, image_size, model_type, resize=True):
     lr = 0.001
     gamma = 0.1
     milestones = [0.5 * num_epochs, 0.75 * num_epochs]
 
-    info = INFO[data_flag]
-    task = info['task']
+    task = "binary-class"
     n_channels = 3
-    n_classes = len(info['label'])
+    n_classes = 2
 
-    device = torch.device('cpu')
+    # set the device to GPU if available, otherwise use CPU
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+    else:
+        device = torch.device('cpu')
 
-    output_root = os.path.join(output_root, data_flag, time.strftime("%y%m%d_%H%M%S"))
-    if not os.path.exists(output_root):
-        os.makedirs(output_root)
+    # create a folder to save the model and results, named as the current time
+    results_dir = os.path.join(output_dir, time.strftime("%y%m%d_%H%M%S"))
+    if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
 
     print('==> Preparing data...')
 
+    # prepare data loaders for training, validation and testing
     train_loader = data.DataLoader(dataset=train_dataset,
                                    batch_size=batch_size,
                                    shuffle=True)
@@ -53,10 +56,10 @@ def runTraining(train_dataset, val_dataset, test_dataset, data_flag, output_root
 
     print('==> Building and training model for {} epochs...'.format(num_epochs))
 
-    if model_flag == 'resnet18':
+    if model_type == 'resnet18':
         model = resnet18(pretrained=False, num_classes=n_classes) if resize else ResNet18(in_channels=n_channels,
                                                                                           num_classes=n_classes)
-    elif model_flag == 'resnet50':
+    elif model_type == 'resnet50':
         model = resnet50(pretrained=False, num_classes=n_classes) if resize else ResNet50(in_channels=n_channels,
                                                                                           num_classes=n_classes)
     else:
@@ -64,9 +67,9 @@ def runTraining(train_dataset, val_dataset, test_dataset, data_flag, output_root
 
     model = model.to(device)
 
-    train_evaluator = Evaluator(data_flag, 'train', size=size)
-    val_evaluator = Evaluator(data_flag, 'val', size=size)
-    test_evaluator = Evaluator(data_flag, 'test', size=size)
+    train_evaluator = Evaluator(task, 'train', image_size=image_size, root=results_dir)
+    val_evaluator = Evaluator(task, 'val', image_size=image_size, root=results_dir)
+    test_evaluator = Evaluator(task, 'test', image_size=image_size, root=results_dir)
 
     if task == "multi-label, binary-class":
         criterion = nn.BCEWithLogitsLoss()
@@ -121,7 +124,7 @@ def runTraining(train_dataset, val_dataset, test_dataset, data_flag, output_root
         'net': best_model.state_dict(),
     }
 
-    path = os.path.join(output_root, 'best_model.pth')
+    path = os.path.join(results_dir, 'best_model.pth')
     torch.save(state, path)
 
     train_metrics = test(best_model, train_evaluator, train_loader_at_eval, task, criterion, device)
@@ -132,7 +135,7 @@ def runTraining(train_dataset, val_dataset, test_dataset, data_flag, output_root
     val_log = 'val  auc: %.5f  acc: %.5f\n' % (val_metrics[1], val_metrics[2])
     test_log = 'test  auc: %.5f  acc: %.5f\n' % (test_metrics[1], test_metrics[2])
 
-    log = '%s\n' % (data_flag) + train_log + val_log + test_log
+    log = '%s\n' %  train_log + val_log + test_log
     print(log)
 
     metrics = {"train_AUC": train_metrics[1],
@@ -210,99 +213,4 @@ def test(model, evaluator, data_loader, task, criterion, device, run=None, save_
         return [test_loss, auc, acc]
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='RUN Baseline model of MedMNIST2D')
-
-    parser.add_argument('--data_flag',
-                        default='chestmnist',
-                        type=str)
-    parser.add_argument('--output_root',
-                        default='./output',
-                        help='output root, where to save models and results',
-                        type=str)
-    parser.add_argument('--num_epochs',
-                        default=100,
-                        help='num of epochs of training, the script would only test model if set num_epochs to 0',
-                        type=int)
-    parser.add_argument('--size',
-                        default=28,
-                        help='the image size of the dataset, 28 or 64 or 128 or 224, default=28',
-                        type=int)
-    parser.add_argument('--gpu_ids',
-                        default='0',
-                        type=str)
-    parser.add_argument('--batch_size',
-                        default=50,
-                        type=int)
-    parser.add_argument('--download',
-                        action="store_true")
-    parser.add_argument('--resize',
-                        help='resize images of size 28x28 to 224x224',
-                        action="store_true")
-    parser.add_argument('--as_rgb',
-                        help='convert the grayscale image to RGB',
-                        action="store_true")
-    parser.add_argument('--model_path',
-                        default=None,
-                        help='root of the pretrained model to test',
-                        type=str)
-    parser.add_argument('--model_flag',
-                        default='resnet18',
-                        help='choose backbone from resnet18, resnet50',
-                        type=str)
-    parser.add_argument('--run',
-                        default='model1',
-                        help='to name a standard evaluation csv file, named as {flag}_{split}_[AUC]{auc:.3f}_[ACC]{acc:.3f}@{run}.csv',
-                        type=str)
-    parser.add_argument('--root',
-                        default="/Users/katecevora/Documents/PhD/data/MedMNIST",
-                        help='Root directory of dataset',
-                        type=str)
-
-    args = parser.parse_args()
-    data_flag = args.data_flag
-    output_root = args.output_root
-    num_epochs = args.num_epochs
-    size = args.size
-    gpu_ids = args.gpu_ids
-    batch_size = args.batch_size
-    download = args.download
-    model_flag = args.model_flag
-    resize = args.resize
-    as_rgb = args.as_rgb
-    #model_path = args.model_path
-    #run = args.run
-    root = args.root
-    subset_idx = np.arange(0, 1000)
-
-    info = INFO[data_flag]
-    DataClass = getattr(medmnist, info['python_class'])
-
-    if resize:
-        data_transform = transforms.Compose(
-            [transforms.Resize((224, 224), interpolation=PIL.Image.NEAREST),
-             transforms.ToTensor(),
-             transforms.Normalize(mean=[.5], std=[.5])])
-    else:
-        data_transform = transforms.Compose(
-            [transforms.ToTensor(),
-             transforms.Normalize(mean=[.5], std=[.5])])
-
-    train_dataset = Subset(
-        DataClass(split='train', transform=data_transform, download=download, as_rgb=as_rgb, size=size, root=root),
-        subset_idx)
-
-    val_dataset = Subset(DataClass(split='val', transform=data_transform, download=download, as_rgb=as_rgb, size=size, root=root), np.arange(0,200))
-    test_dataset = Subset(DataClass(split='test', transform=data_transform, download=download, as_rgb=as_rgb, size=size, root=root), np.arange(0, 200))
-
-    metrics = runTraining(train_dataset,
-                          val_dataset,
-                          test_dataset,
-                          data_flag,
-                          output_root,
-                          num_epochs,
-                          batch_size,
-                          size,
-                          model_flag,
-                          resize)
+  

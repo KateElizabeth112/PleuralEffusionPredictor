@@ -5,7 +5,7 @@ import os
 from torch.utils.data import Subset
 import pickle as pkl
 import numpy as np
-#from resnetTrainUtils import runTraining
+from resnetTrainUtils import runTraining
 import torchvision.transforms as transforms
 import random
 from cheXpertDataset import CheXpertDataset
@@ -84,20 +84,17 @@ def main():
 
 
     # train the ResNet classifier on the selected subset of data and log results in MLFlow
-    """
+    
     metrics = runTraining(train_data,
                           validation_data,
                           test_data,
-                          dataset_name,
                           output_dir,
                           n_epochs,
                           batch_size,
                           image_size,
                           'resnet50',
-                          True)
-    """
-
-
+                          resize=True)
+    
 
 
 if __name__ == "__main__":

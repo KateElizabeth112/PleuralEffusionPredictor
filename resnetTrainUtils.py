@@ -197,7 +197,7 @@ def test(model, evaluator, data_loader, task, criterion, device, run=None, save_
         for batch_idx, (inputs, targets) in enumerate(data_loader):
             outputs = model(inputs.to(device))
 
-            if task == 'multi-label, binary-class':
+            if task == 'multi-label, binary-class' or task == 'binary-class':
                 targets = targets.to(torch.float32).to(device)
                 loss = criterion(outputs, targets)
                 m = nn.Sigmoid()

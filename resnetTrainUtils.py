@@ -23,9 +23,14 @@ def runTraining(train_dataset, val_dataset, test_dataset, output_dir, num_epochs
     gamma = 0.1
     milestones = [0.5 * num_epochs, 0.75 * num_epochs]
 
+    # type of classification task, for CheXpert prediction of pleural effusion it's binary classification
     task = "binary-class"
-    n_channels = 3
-    n_classes = 2
+
+    # number of input channels for the ResNet (for CheXpert it's one channel)
+    n_channels = 1
+
+    # number of classes for the ResNet. For now it's just pleural effusion
+    n_classes = 1
 
     # set the device to GPU if available, otherwise use CPU
     if torch.cuda.is_available():
@@ -57,9 +62,9 @@ def runTraining(train_dataset, val_dataset, test_dataset, output_dir, num_epochs
     print('==> Building and training model for {} epochs...'.format(num_epochs))
 
     if model_type == 'resnet18':
-        model = ResNet18(in_channels=n_channels,num_classes=n_classes)
+        model = ResNet18(in_channels=n_channels, num_classes=n_classes)
     elif model_type == 'resnet50':
-        model = ResNet50(in_channels=n_channels,num_classes=n_classes)
+        model = ResNet50(in_channels=n_channels, num_classes=n_classes)
     else:
         raise NotImplementedError
 
@@ -69,7 +74,7 @@ def runTraining(train_dataset, val_dataset, test_dataset, output_dir, num_epochs
     val_evaluator = Evaluator(task, 'val', image_size=image_size, root=results_dir)
     test_evaluator = Evaluator(task, 'test', image_size=image_size, root=results_dir)
 
-    if task == "multi-label, binary-class":
+    if task == "multi-label, binary-class" or task == "binary-class":
         criterion = nn.BCEWithLogitsLoss()
     else:
         criterion = nn.CrossEntropyLoss()
@@ -155,7 +160,7 @@ def train(model, train_loader, task, criterion, optimizer, device):
         optimizer.zero_grad()
         outputs = model(inputs.to(device))
 
-        if task == 'multi-label, binary-class':
+        if task == 'multi-label, binary-class' or task == 'binary-class':
             targets = targets.to(torch.float32).to(device)
             loss = criterion(outputs, targets)
         else:

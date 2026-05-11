@@ -31,7 +31,7 @@ loss_plot_save_path = os.path.join(code_dir, "loss.png")
 dataset_name = "CheXpert"
 n_epochs = 3
 batch_size = 5
-image_size = 128
+image_size = 320
 
 
 def getTrainIDs(n_samples=1000):
@@ -50,6 +50,13 @@ def getTrainIDs(n_samples=1000):
         print(f"Warning: there are only {len(pleural_effusion_ids)} pleural effusion ids in the dataset, which is less than the requested n_samples of {n_samples}. Returning all pleural effusion ids.")
         ids = pleural_effusion_ids
     
+    return ids
+
+
+def getTrainIDs(data, n_samples=1000):
+    # get the IDs of the validation data from the CheXpert dataset
+    ids = random.sample(range(0, len(data)), 1000)
+
     return ids
 
 def getValidationIDs(data, n_samples=1000):
@@ -71,7 +78,7 @@ def main():
 
 
     # select a subset of the data to train the ResNet classifier on
-    ids = getTrainIDs()
+    ids = getTrainIDs(dataset)
     train_data = Subset(dataset, ids)
 
     # select a subset of the data to validate the ResNet classifier on

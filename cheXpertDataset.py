@@ -19,15 +19,20 @@ class CheXpertDataset(Dataset):
                 self.data_path = os.path.join(root_dir, 'train_resized_npy')
             else:
                 self.data_path = os.path.join(root_dir, 'train_npy')
-            
         elif split == 'valid':
             self.labels_path = os.path.join(root_dir, 'valid.csv')
             if resized:
                 self.data_path = os.path.join(root_dir, 'valid_resized_npy')
             else:
                 self.data_path = os.path.join(root_dir, 'valid_npy')
+        elif split == 'test':
+            self.labels_path = os.path.join(root_dir, 'test.csv')
+            if resized:
+                self.data_path = os.path.join(root_dir, 'test_resized_npy')
+            else:
+                self.data_path = os.path.join(root_dir, 'test_npy')
         else:
-            raise ValueError('split must be either "train" or "valid"')
+            raise ValueError('split must be either "train", "valid" or test')
         
         # check that we have a csv file with the labels
         if not os.path.exists(self.labels_path):

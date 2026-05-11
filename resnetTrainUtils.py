@@ -16,21 +16,27 @@ from evaluatorLocal import Evaluator
 from models import ResNet18, ResNet50
 from torchvision.models import resnet18, resnet50
 from tqdm import trange
+import tomli
 
 
-def runTraining(train_dataset, val_dataset, test_dataset, output_dir, num_epochs, batch_size, image_size, model_type):
-    lr = 0.001
-    gamma = 0.1
+def runTraining(train_dataset, val_dataset, test_dataset, output_dir, config_file):
+    # load the toml config file with the parameters for training the ResNet classifier
+    with open(config_file, "rb") as f:
+        config = tomli.load(f)
+
+    # load the training parameters
+    lr = config["training"]["lr"]
+    gamma = config["training"]["gamma"]
+    num_epochs = config["training"]["num_epochs"]
     milestones = [0.5 * num_epochs, 0.75 * num_epochs]
+    batch_size = config["training"]["batch_size"]
 
-    # type of classification task, for CheXpert prediction of pleural effusion it's binary classification
-    task = "binary-class"
-
-    # number of input channels for the ResNet (for CheXpert it's one channel)
-    n_channels = 1
-
-    # number of classes for the ResNet. For now it's just pleural effusion
-    n_classes = 1
+    # load the model parameters
+    task = config["model"]["task"]              # type of classification task e.g. binary-class, multi-label binary-class or multi-class
+    n_channels = config["model"]["n_channels"]  # number of input channels for the ResNet
+    n_classes = config["model"]["n_classes"]    # number of classes for the ResNet output
+    model_type = config["model"]["model_type"]  # type of ResNet to use (e.g. resnet18 or resnet50)
+    image_size = config["data"]["image_size"]  # size of the input images (assumed to be square)
 
     # set the device to GPU if available, otherwise use CPU
     if torch.cuda.is_available():

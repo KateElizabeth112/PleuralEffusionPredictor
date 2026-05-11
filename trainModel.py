@@ -10,6 +10,7 @@ import torchvision.transforms as transforms
 import random
 from cheXpertDataset import CheXpertDataset
 import pandas as pd
+import toml
 
 
 # set up the argument parser
@@ -25,13 +26,7 @@ code_dir = os.path.join(root_dir, "code/PleuralEffusionPredictor")
 data_dir = os.path.join(root_dir, "data")
 output_dir = os.path.join(root_dir, "output")
 loss_plot_save_path = os.path.join(code_dir, "loss.png")
-
-
-# set up parameters for training the ResNet classifier
-dataset_name = "CheXpert"
-n_epochs = 3
-batch_size = 5
-image_size = 320
+config_file = os.path.join(code_dir, "config.toml")
 
 
 def getTrainIDs(n_samples=1000):
@@ -52,13 +47,6 @@ def getTrainIDs(n_samples=1000):
     
     return ids
 
-
-def getTrainIDs(data, n_samples=1000):
-    # get the IDs of the validation data from the CheXpert dataset
-    ids = random.sample(range(0, len(data)), 1000)
-
-    return ids
-
 def getValidationIDs(data, n_samples=1000):
     # get the IDs of the validation data from the CheXpert dataset
     ids = random.sample(range(0, len(data)), 1000)
@@ -76,9 +64,10 @@ def main():
     # load the CheXpert dataset
     dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='train', resized=True, transform=transforms.ToTensor())
 
+    print(len(dataset))
 
     # select a subset of the data to train the ResNet classifier on
-    ids = getTrainIDs(dataset)
+    ids = getTrainIDs()
     train_data = Subset(dataset, ids)
 
     # select a subset of the data to validate the ResNet classifier on
@@ -89,17 +78,12 @@ def main():
     test_ids = getValidationIDs(dataset)
     test_data = Subset(dataset, test_ids)
 
-
     # train the ResNet classifier on the selected subset of data and log results in MLFlow
-    
     metrics = runTraining(train_data,
                           validation_data,
                           test_data,
                           output_dir,
-                          n_epochs,
-                          batch_size,
-                          image_size,
-                          'resnet50')
+                          config_file)
     
 
 

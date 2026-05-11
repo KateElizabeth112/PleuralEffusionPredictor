@@ -5,7 +5,7 @@ import pandas as pd
 from skimage.transform import resize
 import matplotlib.pyplot as plt
 
-def preprocessCheXpert(data_dir, image_size):
+def preprocessCheXpert(data_dir, image_size, plot=False):
     for split in ['train']:
         # read the csv file with the labels
         df = pd.read_csv(os.path.join(data_dir, f"{split}_reduced.csv"))
@@ -33,16 +33,17 @@ def preprocessCheXpert(data_dir, image_size):
             img_resized = resize(img, (image_size, image_size), anti_aliasing=True)
 
             # plot the resized image side by side with the original image to check that the resizing worked correctly. underneath each image show a histogram of the pixel values to check that the pixel value distribution is preserved after resizing
-            fig, axs = plt.subplots(2, 2, figsize=(10, 10))
-            axs[0, 0].imshow(img, cmap='gray')
-            axs[0, 0].set_title('Original Image')
-            axs[0, 1].imshow(img_resized, cmap='gray')
-            axs[0, 1].set_title('Resized Image')
-            axs[1, 0].hist(img.flatten(), bins=20, range=(0, 1))
-            axs[1, 0].set_title('Original Image Pixel Value Distribution')
-            axs[1, 1].hist(img_resized.flatten(), bins=20, range=(0, 1))
-            axs[1, 1].set_title('Resized Image Pixel Value Distribution')
-            plt.savefig(os.path.join(jpg_output_dir, f"img_{format(idx, '05d')}.jpg"))
+            if plot:
+                fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+                axs[0, 0].imshow(img, cmap='gray')
+                axs[0, 0].set_title('Original Image')
+                axs[0, 1].imshow(img_resized, cmap='gray')
+                axs[0, 1].set_title('Resized Image')
+                axs[1, 0].hist(img.flatten(), bins=20, range=(0, 1))
+                axs[1, 0].set_title('Original Image Pixel Value Distribution')
+                axs[1, 1].hist(img_resized.flatten(), bins=20, range=(0, 1))
+                axs[1, 1].set_title('Resized Image Pixel Value Distribution')
+                plt.savefig(os.path.join(jpg_output_dir, f"img_{format(idx, '05d')}.jpg"))
 
             np.save(os.path.join(split_output_dir, f"img_{format(idx, '05d')}.npy"), img_resized)
 
@@ -50,7 +51,7 @@ def preprocessCheXpert(data_dir, image_size):
 def main():
     data_dir = '/Users/katephd/Documents/data/CheXpertSmall'
     output_dir = '/Users/katephd/Documents/data/CheXpertPreprocessed'
-    image_size = 128
+    image_size = 64
 
     preprocessCheXpert(data_dir, image_size)
 

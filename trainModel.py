@@ -67,7 +67,7 @@ def getTestIDs(data, n_samples=1000):
 
 def main():
     # load the CheXpert dataset
-    dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='train', transform=transforms.ToTensor())
+    dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='train', resized=True, transform=transforms.ToTensor())
 
 
     # select a subset of the data to train the ResNet classifier on
@@ -92,8 +92,7 @@ def main():
                           n_epochs,
                           batch_size,
                           image_size,
-                          'resnet50',
-                          resize=True)
+                          'resnet50')
     
 
 

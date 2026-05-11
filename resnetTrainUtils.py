@@ -18,7 +18,7 @@ from torchvision.models import resnet18, resnet50
 from tqdm import trange
 
 
-def runTraining(train_dataset, val_dataset, test_dataset, output_dir, num_epochs, batch_size, image_size, model_type, resize=True):
+def runTraining(train_dataset, val_dataset, test_dataset, output_dir, num_epochs, batch_size, image_size, model_type):
     lr = 0.001
     gamma = 0.1
     milestones = [0.5 * num_epochs, 0.75 * num_epochs]
@@ -57,11 +57,9 @@ def runTraining(train_dataset, val_dataset, test_dataset, output_dir, num_epochs
     print('==> Building and training model for {} epochs...'.format(num_epochs))
 
     if model_type == 'resnet18':
-        model = resnet18(pretrained=False, num_classes=n_classes) if resize else ResNet18(in_channels=n_channels,
-                                                                                          num_classes=n_classes)
+        model = ResNet18(in_channels=n_channels,num_classes=n_classes)
     elif model_type == 'resnet50':
-        model = resnet50(pretrained=False, num_classes=n_classes) if resize else ResNet50(in_channels=n_channels,
-                                                                                          num_classes=n_classes)
+        model = ResNet50(in_channels=n_channels,num_classes=n_classes)
     else:
         raise NotImplementedError
 

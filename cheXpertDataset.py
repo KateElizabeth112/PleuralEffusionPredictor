@@ -8,17 +8,24 @@ import pandas as pd
 
 
 class CheXpertDataset(Dataset):
-    def __init__(self, root_dir, transform=None, split='train'):
+    def __init__(self, root_dir, transform=None, split='train', resized=True):
         self.root_dir = root_dir
         self.transform = transform
 
         # Do some checks to make sure we have the right files
         if split == 'train':
             self.labels_path = os.path.join(root_dir, 'train_reduced.csv')
-            self.data_path = os.path.join(root_dir, 'train_npy')
+            if resized:
+                self.data_path = os.path.join(root_dir, 'train_resized_npy')
+            else:
+                self.data_path = os.path.join(root_dir, 'train_npy')
+            
         elif split == 'valid':
             self.labels_path = os.path.join(root_dir, 'valid.csv')
-            self.data_path = os.path.join(root_dir, 'valid_npy')
+            if resized:
+                self.data_path = os.path.join(root_dir, 'valid_resized_npy')
+            else:
+                self.data_path = os.path.join(root_dir, 'valid_npy')
         else:
             raise ValueError('split must be either "train" or "valid"')
         

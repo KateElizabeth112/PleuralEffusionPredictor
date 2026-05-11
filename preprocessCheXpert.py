@@ -23,7 +23,6 @@ def preprocessCheXpert(data_dir, image_size):
         # loop through the rows of the dataframe and preprocess each image
         for idx, row in df.iterrows():
             print(f"Processing image {idx} of {len(df)} for split {split}")
-
             img_id = row['image_id']
             img_path = os.path.join(data_dir, f"{split}_npy/img_{format(idx, '05d')}.npy")
             
@@ -51,7 +50,7 @@ def preprocessCheXpert(data_dir, image_size):
 def main():
     data_dir = '/Users/katephd/Documents/data/CheXpertSmall'
     output_dir = '/Users/katephd/Documents/data/CheXpertPreprocessed'
-    image_size = 320
+    image_size = 128
 
     preprocessCheXpert(data_dir, image_size)
 

@@ -64,10 +64,6 @@ def getAUC(y_true, y_score, task):
                 counter += 1
         ret = auc / counter
     elif task == "binary-class":
-    
-        print("y_score shape: ", y_score.shape)
-        print("y_true shape: ", y_true.shape)
-
         if y_score.ndim == 2:
             y_score = y_score[:, -1]
         else:

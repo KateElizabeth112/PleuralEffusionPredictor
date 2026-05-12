@@ -30,8 +30,9 @@ class Evaluator:
             )
 
     def evaluate(self, y_score, y_targets, save_folder=None, run=None):
-        # convert targets to uint8
-        y_targets = y_targets.astype(np.uint8)
+        # convert targets to uint8. Check for any invalid values in the targets before conversion and throw an error if there are any
+        if np.any((y_targets < 0) | (y_targets > 1)):
+            raise ValueError("Targets should be binary (0 or 1) for multi-label and binary-class tasks, and should be integers from 0 to n_classes-1 for multi-class tasks.")
 
         assert y_score.shape[0] == y_targets.shape[0]
 
@@ -63,10 +64,18 @@ def getAUC(y_true, y_score, task):
                 counter += 1
         ret = auc / counter
     elif task == "binary-class":
+    
+        print("y_score shape: ", y_score.shape)
+        print("y_true shape: ", y_true.shape)
+
         if y_score.ndim == 2:
             y_score = y_score[:, -1]
         else:
             assert y_score.ndim == 1
+        if y_true.ndim == 2:
+            y_true = y_true[:, -1]
+        else:
+            assert y_true.ndim == 1
         ret = roc_auc_score(y_true, y_score)
     else:
         auc = 0

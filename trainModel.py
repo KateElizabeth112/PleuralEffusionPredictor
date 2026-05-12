@@ -10,7 +10,7 @@ import torchvision.transforms as transforms
 import random
 from cheXpertDataset import CheXpertDataset
 import pandas as pd
-import toml
+import tomli
 
 
 # set up the argument parser
@@ -47,12 +47,6 @@ def getTrainIDs(n_samples=1000):
     
     return ids
 
-def getValidationIDs(data, n_samples=1000):
-    # get the IDs of the validation data from the CheXpert dataset
-    ids = random.sample(range(0, len(data)), 1000)
-
-    return ids
-
 def getTestIDs(data, n_samples=1000):
     # get the IDs of the test data from the CheXpert dataset
     ids = random.sample(range(0, len(data)), 1000)
@@ -62,25 +56,37 @@ def getTestIDs(data, n_samples=1000):
 
 def main():
     # load the CheXpert dataset
-    dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='train', resized=True, transform=transforms.ToTensor())
+    train_dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='train', resized=True, transform=transforms.ToTensor())
+    valid_dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='valid', resized=True, transform=transforms.ToTensor())
 
-    print(len(dataset))
+    # open the config file and load the parameters for the dataset
+    with open(config_file, "rb") as f:
+        config = tomli.load(f)
+
+    train_dataset_size = config["data"]["train_dataset_size"]
+    test_dataset_size = config["data"]["test_dataset_size"]
+    #valid_dataset_size = config["data"]["valid_dataset_size"]
 
     # select a subset of the data to train the ResNet classifier on
-    ids = getTrainIDs()
-    train_data = Subset(dataset, ids)
+    print(f"Selecting a subset of the data to train the ResNet classifier on with size {train_dataset_size}...")
+    ids = getTrainIDs(n_samples=train_dataset_size)
+    train_data = Subset(train_dataset, ids)
 
     # select a subset of the data to validate the ResNet classifier on
-    validation_ids = getValidationIDs(dataset)
-    validation_data = Subset(dataset, validation_ids)
+    #print(f"Selecting a subset of the data to validate the ResNet classifier on with size {valid_dataset_size}...")
+    #validation_ids = getValidationIDs(dataset, n_samples=valid_dataset_size)
+    #validation_ids = getTrainIDs(n_samples=valid_dataset_size)
+    #validation_data = Subset(dataset, validation_ids)
 
     # select a subset of the data to test the ResNet classifier on
-    test_ids = getValidationIDs(dataset)
-    test_data = Subset(dataset, test_ids)
+    print(f"Selecting a subset of the data to test the ResNet classifier on with size {test_dataset_size}...")
+    #test_ids = getValidationIDs(dataset, n_samples=test_dataset_size)
+    test_ids = getTrainIDs(n_samples=test_dataset_size)
+    test_data = Subset(train_dataset, test_ids)
 
     # train the ResNet classifier on the selected subset of data and log results in MLFlow
     metrics = runTraining(train_data,
-                          validation_data,
+                          valid_dataset,
                           test_data,
                           output_dir,
                           config_file)

@@ -20,7 +20,7 @@ class CheXpertDataset(Dataset):
             else:
                 self.data_path = os.path.join(root_dir, 'train_npy')
         elif split == 'valid':
-            self.labels_path = os.path.join(root_dir, 'valid.csv')
+            self.labels_path = os.path.join(root_dir, 'valid_reduced.csv')
             if resized:
                 self.data_path = os.path.join(root_dir, 'valid_resized_npy')
             else:

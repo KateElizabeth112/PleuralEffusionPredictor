@@ -126,8 +126,14 @@ def runTraining(train_dataset, val_dataset, test_dataset, output_dir, config_fil
             best_epoch = epoch
             best_auc = cur_auc
             best_model = deepcopy(model)
-            print('cur_best_auc:', best_auc)
-            print('cur_best_epoch', best_epoch)
+
+        print('cur_best_auc:', best_auc)
+        print('cur_best_epoch', best_epoch)
+
+        # stop training if the current best epoch has not improved for 10 epochs
+        if epoch - best_epoch >= 7:
+            print('Early stopping at epoch {} with best epoch {}'.format(epoch, best_epoch))
+            break
 
     state = {
         'net': best_model.state_dict(),

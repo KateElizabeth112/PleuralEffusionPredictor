@@ -3,7 +3,6 @@ import argparse
 import mlflow
 import os
 from torch.utils.data import Subset
-import pickle as pkl
 import numpy as np
 from resnetTrainUtils import runTraining
 import torchvision.transforms as transforms

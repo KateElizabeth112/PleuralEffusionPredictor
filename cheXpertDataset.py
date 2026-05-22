@@ -1,5 +1,4 @@
 # contains our own CheXpertDataset class that extends the PyTorch Dataset class
-import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 import os

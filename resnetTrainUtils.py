@@ -1,20 +1,12 @@
-import argparse
 import os
 import time
 from collections import OrderedDict
 from copy import deepcopy
-
-import numpy as np
-import PIL
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.utils.data as data
-from torch.utils.data import Subset
-import torchvision.transforms as transforms
 from evaluatorLocal import Evaluator
 from models import ResNet18, ResNet50
-from torchvision.models import resnet18, resnet50
 from tqdm import trange
 import tomli
 

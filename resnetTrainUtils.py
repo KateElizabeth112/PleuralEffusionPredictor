@@ -30,6 +30,7 @@ def runTraining(train_dataset, val_dataset, test_dataset, output_dir, config_fil
     num_epochs = config["training"]["num_epochs"]
     milestones = [0.5 * num_epochs, 0.75 * num_epochs]
     batch_size = config["training"]["batch_size"]
+    early_stopping_patience = config["training"]["early_stopping_patience"]
 
     # load the model parameters
     task = config["model"]["task"]              # type of classification task e.g. binary-class, multi-label binary-class or multi-class
@@ -130,8 +131,8 @@ def runTraining(train_dataset, val_dataset, test_dataset, output_dir, config_fil
         print('cur_best_auc:', best_auc)
         print('cur_best_epoch', best_epoch)
 
-        # stop training if the current best epoch has not improved for 10 epochs
-        if epoch - best_epoch >= 7:
+        # stop training if the current best epoch has not improved for a specified number of epochs
+        if epoch - best_epoch >= early_stopping_patience:
             print('Early stopping at epoch {} with best epoch {}'.format(epoch, best_epoch))
             break
 

@@ -61,8 +61,9 @@ def preprocessCheXpert(data_dir, image_size, split="train", plot=False):
 
 def main():
     data_dir = '/Users/katephd/Documents/data/CheXpertSmall'
-    image_size = 64
+    image_size = 128
 
+    preprocessCheXpert(data_dir, image_size, split="train")
     preprocessCheXpert(data_dir, image_size, split="valid")
 
 if __name__ == "__main__":

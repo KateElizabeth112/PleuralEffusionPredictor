@@ -13,7 +13,9 @@ early_stopping_patience = 7
 
 [data]
 dataset_name = "CheXpert"
-image_size = 64
+image_size = 128
 train_dataset_size = 1000
-test_dataset_size = 200
+test_dataset_size = 1000
 valid_dataset_size = 200
+train_ids_file = "train_ids_1779451052.pkl"
+test_ids_file = "train_ids_1779451052.pkl"

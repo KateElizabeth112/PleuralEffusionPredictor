@@ -10,6 +10,7 @@ import random
 from cheXpertDataset import CheXpertDataset
 import pandas as pd
 import tomli
+import pickle as pkl
 
 
 # set up the argument parser
@@ -28,7 +29,7 @@ loss_plot_save_path = os.path.join(code_dir, "loss.png")
 config_file = os.path.join(code_dir, "config.toml")
 
 
-def getTrainIDs(n_samples=1000):
+def sampleTrainIDs(n_samples=1000):
     # get the IDs of the training data from the CheXpert dataset
 
     # First return the IDs of the images that have a pleural effusion label of 1 OR 0, then return a random sample of the remaining IDs to make up a total of n_samples
@@ -46,41 +47,58 @@ def getTrainIDs(n_samples=1000):
     
     return ids
 
-def getTestIDs(data, n_samples=1000):
-    # get the IDs of the test data from the CheXpert dataset
-    ids = random.sample(range(0, len(data)), 1000)
+
+def getTestIDs(test_ids_file):
+    # get the IDs of the training data from the CheXpert dataset by loading them from a file
+    with open(test_ids_file, 'rb') as f:
+        ids = pkl.load(f)
+
+    return ids
+
+
+def getTrainIDs(train_ids_file, diversity="high"):
+    # get the IDs of the test data from the CheXpert dataset by loading them from a file
+    with open(train_ids_file, 'rb') as f:
+        ids_list = pkl.load(f)
+
+    # pick the train IDs with the highest diversity score if diversity is "high", and pick the train IDs with the lowest diversity score if diversity is "low"
+    diversity_scores = [item['diversity_score'] for item in ids_list]
+
+    if diversity == "high":
+        # find the index of the train IDs with the highest diversity score
+        ids = ids_list[np.argmax(diversity_scores)]['train_ids']
+    elif diversity == "low":
+        # find the index of the train IDs with the lowest diversity score
+        ids = ids_list[np.argmin(diversity_scores)]['train_ids']
+    else:
+        raise ValueError('diversity must be either "high" or "low"')
 
     return ids
 
 
 def main():
-    # load the CheXpert dataset
-    train_dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='train', resized=True, transform=transforms.ToTensor())
-    valid_dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='valid', resized=True, transform=transforms.ToTensor())
-
     # open the config file and load the parameters for the dataset
     with open(config_file, "rb") as f:
         config = tomli.load(f)
 
+    # load the parameters for the dataset from the config file
     train_dataset_size = config["data"]["train_dataset_size"]
     test_dataset_size = config["data"]["test_dataset_size"]
-    #valid_dataset_size = config["data"]["valid_dataset_size"]
+    test_ids_file = config["data"]["test_ids_file"]
+    train_ids_file = config["data"]["train_ids_file"]
 
+    # load the CheXpert dataset
+    train_dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='train', resized=True, transform=transforms.ToTensor())
+    valid_dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='valid', resized=True, transform=transforms.ToTensor())
+    
     # select a subset of the data to train the ResNet classifier on
     print(f"Selecting a subset of the data to train the ResNet classifier on with size {train_dataset_size}...")
-    ids = getTrainIDs(n_samples=train_dataset_size)
-    train_data = Subset(train_dataset, ids)
-
-    # select a subset of the data to validate the ResNet classifier on
-    #print(f"Selecting a subset of the data to validate the ResNet classifier on with size {valid_dataset_size}...")
-    #validation_ids = getValidationIDs(dataset, n_samples=valid_dataset_size)
-    #validation_ids = getTrainIDs(n_samples=valid_dataset_size)
-    #validation_data = Subset(dataset, validation_ids)
+    train_ids = getTrainIDs(train_ids_file)
+    train_data = Subset(train_dataset, train_ids)
 
     # select a subset of the data to test the ResNet classifier on
     print(f"Selecting a subset of the data to test the ResNet classifier on with size {test_dataset_size}...")
-    #test_ids = getValidationIDs(dataset, n_samples=test_dataset_size)
-    test_ids = getTrainIDs(n_samples=test_dataset_size)
+    test_ids = getTestIDs(test_ids_file)
     test_data = Subset(train_dataset, test_ids)
 
     # train the ResNet classifier on the selected subset of data and log results in MLFlow

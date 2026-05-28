@@ -5,8 +5,11 @@
 # bash script to train the ResNet classifier on HPC
 cd ${PBS_O_WORKDIR}
 
-# Launch virtual environment
-module load anaconda3/personal
+# Load the python version we will use
+module load Python/3.9.5-GCCcore-10.3.0   
+
+# load the virtual environment
+source .venv/bin/activate
 
 # run experiments
 python trainModel.py -r "/rds/general/user/kc2322/home/" -c "configHPC.toml" -d $DIVERSITY

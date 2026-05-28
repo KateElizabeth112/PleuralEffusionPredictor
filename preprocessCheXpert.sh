@@ -11,8 +11,5 @@ module load Python/3.9.5-GCCcore-10.3.0
 # load the virtual environment
 source .venv/bin/activate
 
-# install requirements
-pip install -r requirements.txt
-
 # run experiments
 python preprocessCheXpert.py -d "/rds/general/user/kc2322/home/data/CheXpertSmall" -i 320

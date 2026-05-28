@@ -18,12 +18,14 @@ parser = argparse.ArgumentParser(description="Run experiments to determine the r
 parser.add_argument("-r", "--root_dir", type=str, help="Root directory where the code and data are located",
                     default="/Users/katephd/Documents/")
 parser.add_argument("-c", "--config_file", type=str, help="Name of teh config file with the parameters for the dataset and training", default="config.toml")
+parser.add_argument("-d", "--diversity", type=str, help="Whether to select the training data with high or low diversity score", default="high")
 
 args = parser.parse_args()
 
 # parse arguments
 root_dir = args.root_dir
 config_file = args.config_file
+diversity = args.diversity
 
 # set up paths to directories
 code_dir = os.path.join(root_dir, "code/PleuralEffusionPredictor")
@@ -97,7 +99,7 @@ def main():
     
     # select a subset of the data to train the ResNet classifier on
     print(f"Selecting a subset of the data to train the ResNet classifier on with size {train_dataset_size}...")
-    train_ids = getTrainIDs(train_ids_file, diversity="low")
+    train_ids = getTrainIDs(train_ids_file, diversity=diversity)
     train_data = Subset(train_dataset, train_ids)
 
     # select a subset of the data to test the ResNet classifier on

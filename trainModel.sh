@@ -9,4 +9,4 @@ cd ${PBS_O_WORKDIR}
 module load anaconda3/personal
 
 # run experiments
-python preprocessCheXpert.py -r "/rds/general/user/kc2322/home/" -c "configHPC.toml"
+python trainModel.py -r "/rds/general/user/kc2322/home/" -c "configHPC.toml" -d "high"

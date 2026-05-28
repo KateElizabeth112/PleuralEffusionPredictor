@@ -114,6 +114,11 @@ def main():
                           output_dir,
                           config_file_path)
     
+    # save the metrics to a file
+    metrics_save_path = os.path.join(output_dir, f"metrics_{diversity}.pkl")
+    with open(metrics_save_path, 'wb') as f:
+        pkl.dump(metrics, f)
+    
 
 
 if __name__ == "__main__":

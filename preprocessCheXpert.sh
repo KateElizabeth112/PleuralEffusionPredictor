@@ -15,4 +15,4 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # run experiments
-python preprocessCheXpert.py -d "/rds/general/user/kc2322/home/data" -i 320
+python preprocessCheXpert.py -d "/rds/general/user/kc2322/home/data/CheXpertSmall" -i 320

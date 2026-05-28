@@ -4,6 +4,17 @@ import numpy as np
 import pandas as pd
 from skimage.transform import resize
 import matplotlib.pyplot as plt
+import argparse
+
+# Set up the argument parser
+parser = argparse.ArgumentParser(description="Resize the images in the CheXpert dataset and save them as numpy arrays for later use in training a ResNet classifier")
+parser.add_argument("-d", "--data_dir", type=str, help="Directory where the data is located", default='/Users/katephd/Documents/data/CheXpertSmall')
+parser.add_argument("-i", "--image_size", type=int, help="Image size", default=128)
+
+args = parser.parse_args()
+
+data_dir =args.data_dir
+image_size = args.image_size
 
 def preprocessCheXpert(data_dir, image_size, split="train", plot=False):
     # check that the splt is either "train", "valid" or "test"
@@ -60,9 +71,6 @@ def preprocessCheXpert(data_dir, image_size, split="train", plot=False):
 
 
 def main():
-    data_dir = '/Users/katephd/Documents/data/CheXpertSmall'
-    image_size = 128
-
     preprocessCheXpert(data_dir, image_size, split="train")
     preprocessCheXpert(data_dir, image_size, split="valid")
 

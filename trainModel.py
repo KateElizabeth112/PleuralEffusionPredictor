@@ -17,16 +17,20 @@ import pickle as pkl
 parser = argparse.ArgumentParser(description="Run experiments to determine the relationship between dataset diversity and generalisation performance")
 parser.add_argument("-r", "--root_dir", type=str, help="Root directory where the code and data are located",
                     default="/Users/katephd/Documents/")
+parser.add_argument("-c", "--config_file", type=str, help="Name of teh config file with the parameters for the dataset and training", default="config.toml")
 
 args = parser.parse_args()
 
-# set up paths to directories
+# parse arguments
 root_dir = args.root_dir
+config_file = args.config_file
+
+# set up paths to directories
 code_dir = os.path.join(root_dir, "code/PleuralEffusionPredictor")
 data_dir = os.path.join(root_dir, "data")
 output_dir = os.path.join(root_dir, "output")
 loss_plot_save_path = os.path.join(code_dir, "loss.png")
-config_file = os.path.join(code_dir, "config.toml")
+config_file_path = os.path.join(code_dir, config_file)
 
 
 def sampleTrainIDs(n_samples=1000):
@@ -78,7 +82,7 @@ def getTrainIDs(train_ids_file, diversity="high"):
 
 def main():
     # open the config file and load the parameters for the dataset
-    with open(config_file, "rb") as f:
+    with open(config_file_path, "rb") as f:
         config = tomli.load(f)
 
     # load the parameters for the dataset from the config file
@@ -106,7 +110,7 @@ def main():
                           valid_dataset,
                           test_data,
                           output_dir,
-                          config_file)
+                          config_file_path)
     
 
 

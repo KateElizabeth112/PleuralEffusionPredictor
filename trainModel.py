@@ -93,7 +93,7 @@ def main():
     
     # select a subset of the data to train the ResNet classifier on
     print(f"Selecting a subset of the data to train the ResNet classifier on with size {train_dataset_size}...")
-    train_ids = getTrainIDs(train_ids_file)
+    train_ids = getTrainIDs(train_ids_file, diversity="low")
     train_data = Subset(train_dataset, train_ids)
 
     # select a subset of the data to test the ResNet classifier on

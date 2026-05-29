@@ -1,6 +1,11 @@
 # Extra 
 .DS_Store
 
+# local files that we don't want to commit to GIT
+generateTrainTestIDs.py
+inceptionEncoder.py
+vendiScore.py
+
 # pickle files
 *.pkl
 

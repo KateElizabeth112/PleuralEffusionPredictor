@@ -1,4 +1,6 @@
 #!/bin/bash
+#PBS -o /rds/general/user/kc2322/home/logs
+#PBS -j oe
 #PBS -l walltime=12:00:00
 #PBS -l select=1:ncpus=15:mem=80gb:ngpus=1:gpu_type=RTX6000
 

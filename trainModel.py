@@ -88,8 +88,6 @@ def main():
         config = tomli.load(f)
 
     # load the parameters for the dataset from the config file
-    train_dataset_size = config["data"]["train_dataset_size"]
-    test_dataset_size = config["data"]["test_dataset_size"]
     test_ids_file = config["data"]["test_ids_file"]
     train_ids_file = config["data"]["train_ids_file"]
 
@@ -98,12 +96,10 @@ def main():
     valid_dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='valid', resized=True, transform=transforms.ToTensor())
     
     # select a subset of the data to train the ResNet classifier on
-    print(f"Selecting a subset of the data to train the ResNet classifier on with size {train_dataset_size}...")
     train_ids = getTrainIDs(train_ids_file, diversity=diversity)
     train_data = Subset(train_dataset, train_ids)
 
     # select a subset of the data to test the ResNet classifier on
-    print(f"Selecting a subset of the data to test the ResNet classifier on with size {test_dataset_size}...")
     test_ids = getTestIDs(test_ids_file)
     test_data = Subset(train_dataset, test_ids)
 

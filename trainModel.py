@@ -54,30 +54,10 @@ def sampleTrainIDs(n_samples=1000):
     return ids
 
 
-def getTestIDs(test_ids_file):
-    # get the IDs of the training data from the CheXpert dataset by loading them from a file
-    with open(test_ids_file, 'rb') as f:
+def getIDs(ids_file):
+    # get the IDs of the data from the CheXpert dataset by loading them from a file
+    with open(ids_file, 'rb') as f:
         ids = pkl.load(f)
-
-    return ids
-
-
-def getTrainIDs(train_ids_file, diversity="high"):
-    # get the IDs of the test data from the CheXpert dataset by loading them from a file
-    with open(train_ids_file, 'rb') as f:
-        ids_list = pkl.load(f)
-
-    # pick the train IDs with the highest diversity score if diversity is "high", and pick the train IDs with the lowest diversity score if diversity is "low"
-    diversity_scores = [item['diversity_score'] for item in ids_list]
-
-    if diversity == "high":
-        # find the index of the train IDs with the highest diversity score
-        ids = ids_list[np.argmax(diversity_scores)]['train_ids']
-    elif diversity == "low":
-        # find the index of the train IDs with the lowest diversity score
-        ids = ids_list[np.argmin(diversity_scores)]['train_ids']
-    else:
-        raise ValueError('diversity must be either "high" or "low"')
 
     return ids
 
@@ -96,11 +76,11 @@ def main():
     valid_dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='valid', resized=True, transform=transforms.ToTensor())
     
     # select a subset of the data to train the ResNet classifier on
-    train_ids = getTrainIDs(train_ids_file, diversity=diversity)
+    train_ids = getIDs(train_ids_file)
     train_data = Subset(train_dataset, train_ids)
 
     # select a subset of the data to test the ResNet classifier on
-    test_ids = getTestIDs(test_ids_file)
+    test_ids = getIDs(test_ids_file)
     test_data = Subset(train_dataset, test_ids)
 
     # train the ResNet classifier on the selected subset of data and log results in MLFlow

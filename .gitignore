@@ -6,6 +6,9 @@ generateTrainTestIDs.py
 inceptionEncoder.py
 vendiScore.py
 
+# mlflow
+mlruns/
+
 # pickle files
 *.pkl
 

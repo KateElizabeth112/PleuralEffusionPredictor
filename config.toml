@@ -7,7 +7,7 @@ model_type = "resnet50"
 [training]
 lr = 0.001
 gamma = 0.1
-num_epochs = 100
+num_epochs = 1
 batch_size = 20
 early_stopping_patience = 7
 
@@ -15,4 +15,4 @@ early_stopping_patience = 7
 dataset_name = "CheXpert"
 image_size = 128
 test_ids_file = "test_ids_1779443191.pkl"
-train_ids_file = "train_ids_full_1780387628.pkl"
+train_ids_file = "train_ids_1780652929.pkl"

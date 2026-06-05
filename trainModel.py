@@ -6,7 +6,6 @@ from torch.utils.data import Subset
 import numpy as np
 from resnetTrainUtils import runTraining
 import torchvision.transforms as transforms
-import random
 from cheXpertDataset import CheXpertDataset
 import pandas as pd
 import tomli
@@ -32,29 +31,16 @@ output_dir = os.path.join(root_dir, "output")
 loss_plot_save_path = os.path.join(code_dir, "loss.png")
 config_file_path = os.path.join(code_dir, config_file)
 
+# Point MLflow to the local tracking server
+mlflow.set_tracking_uri("http://127.0.0.1:5000")
 
-def sampleTrainIDs(n_samples=1000):
-    # get the IDs of the training data from the CheXpert dataset
-
-    # First return the IDs of the images that have a pleural effusion label of 1 OR 0, then return a random sample of the remaining IDs to make up a total of n_samples
-    # ignore -1 or NaN labels for pleural effusion
-    df = pd.read_csv(os.path.join(data_dir, "CheXpertSmall", "train_reduced.csv"))
-    pleural_effusion_ids = df[(df['Pleural Effusion'] == 1.0) | (df['Pleural Effusion'] == 0.0)]['image_id'].values
-
-    # select a random sample of the pleural effusion ids to make up a total of n_samples
-    if len(pleural_effusion_ids) >= n_samples:
-        ids = np.array(random.sample(list(pleural_effusion_ids), n_samples))
-    else:
-        # throw a warning if there are not enough pleural effusion ids to make up n_samples
-        print(f"Warning: there are only {len(pleural_effusion_ids)} pleural effusion ids in the dataset, which is less than the requested n_samples of {n_samples}. Returning all pleural effusion ids.")
-        ids = pleural_effusion_ids
-    
-    return ids
+# Create or use an experiment
+mlflow.set_experiment("PleuralEffusionPredictor")
 
 
 def getIDs(ids_file):
     # get the IDs of the data from the CheXpert dataset by loading them from a file
-    with open(ids_file, 'rb') as f:
+    with open(os.path.join("ids", ids_file), 'rb') as f:
         ids = pkl.load(f)
 
     return ids
@@ -88,11 +74,17 @@ def main():
                           output_dir,
                           config_file_path)
     
-    # save the metrics to a file
-    metrics_save_path = os.path.join(output_dir, f"metrics.pkl")
-    with open(metrics_save_path, 'wb') as f:
-        pkl.dump(metrics, f)
-    
+    # record the parameters and metrics using MLFlow
+    with mlflow.start_run():
+        mlflow.log_params(config["training"])
+        mlflow.log_params(config["data"])
+        mlflow.log_params(config["model"])
+        mlflow.log_param("train_ids_file", train_ids_file)
+        mlflow.log_param("test_ids_file", test_ids_file)
+        mlflow.log_metrics(metrics)
+        mlflow.log_metric("test_AUC", metrics["test_AUC"])
+        mlflow.log_metric("test_acc", metrics["test_acc"])
+
 
 
 if __name__ == "__main__":

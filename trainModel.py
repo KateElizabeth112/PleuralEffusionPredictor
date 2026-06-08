@@ -17,12 +17,14 @@ parser = argparse.ArgumentParser(description="Run experiments to determine the r
 parser.add_argument("-r", "--root_dir", type=str, help="Root directory where the code and data are located",
                     default="/Users/katephd/Documents/")
 parser.add_argument("-c", "--config_file", type=str, help="Name of teh config file with the parameters for the dataset and training", default="config.toml")
+parser.add_argument("-t", "--train_ids_file", type=str, help="Name of the pickle file containing the train IDs to use for trainingn", default="train_ids_1780652917.pkl")
 
 args = parser.parse_args()
 
 # parse arguments
 root_dir = args.root_dir
 config_file = args.config_file
+train_ids_file = args.train_ids_file
 
 # set up paths to directories
 code_dir = os.path.join(root_dir, "code/PleuralEffusionPredictor")
@@ -53,7 +55,6 @@ def main():
 
     # load the parameters for the dataset from the config file
     test_ids_file = config["data"]["test_ids_file"]
-    train_ids_file = config["data"]["train_ids_file"]
 
     # load the CheXpert dataset
     train_dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='train', resized=True, transform=transforms.ToTensor())

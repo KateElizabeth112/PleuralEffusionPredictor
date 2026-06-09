@@ -34,7 +34,7 @@ loss_plot_save_path = os.path.join(code_dir, "loss.png")
 config_file_path = os.path.join(code_dir, config_file)
 
 # Point MLflow to the local tracking server
-mlflow.set_tracking_uri("http://127.0.0.1:5000")
+#mlflow.set_tracking_uri("http://127.0.0.1:5000")
 
 # Create or use an experiment
 mlflow.set_experiment("PleuralEffusionPredictor")

@@ -56,6 +56,15 @@ def main():
     # load the parameters for the dataset from the config file
     test_ids_file = config["data"]["test_ids_file"]
 
+    # use the train IDs file to retrieve the associated diversity score for the dataset
+    diversityScores = pd.read_pickle("ids/diversity_scores.pkl")
+
+    # turn into a dictionary where the key is the train IDs file and the value is the diversity score. 
+    diversityScores = {x["filename"]: x["diversity_score"] for x in diversityScores}
+
+    # retrieve the diversity score for the current train IDs file
+    diversity_score = diversityScores.get(train_ids_file, None)
+
     # load the CheXpert dataset
     train_dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='train', resized=True, transform=transforms.ToTensor())
     valid_dataset = CheXpertDataset(os.path.join(data_dir, "CheXpertSmall"), split='valid', resized=True, transform=transforms.ToTensor())
@@ -80,6 +89,8 @@ def main():
         mlflow.log_params(config["training"])
         mlflow.log_params(config["data"])
         mlflow.log_params(config["model"])
+        mlflow.log_param("train_data_size", len(train_data))
+        mlflow.log_param("diversity_score", diversity_score)
         mlflow.log_param("train_ids_file", train_ids_file)
         mlflow.log_param("test_ids_file", test_ids_file)
         mlflow.log_metrics(metrics)

@@ -5,6 +5,8 @@
 generateTrainTestIDs.py
 inceptionEncoder.py
 vendiScore.py
+processResults.py
+results/
 
 # mlflow
 mlruns/

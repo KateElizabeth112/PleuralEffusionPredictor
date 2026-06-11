@@ -84,6 +84,13 @@ def main():
                           output_dir,
                           config_file_path)
     
+    # strip the training set id number from the train IDs file name to use as the train set ID for logging and saving results
+    train_set_id = train_ids_file.split("_")[-1].split(".")[0]
+
+    # store the predictions, true labels, and test set IDs for the test set in a pickle file
+    with open(f"preds/preds_{train_set_id}.pkl", "wb") as f:
+        pkl.dump(metrics["preds"], f)
+    
     # record the parameters and metrics using MLFlow
     with mlflow.start_run():
         mlflow.log_params(config["training"])
@@ -93,10 +100,12 @@ def main():
         mlflow.log_param("diversity_score", diversity_score)
         mlflow.log_param("train_ids_file", train_ids_file)
         mlflow.log_param("test_ids_file", test_ids_file)
-        mlflow.log_metrics(metrics)
+        mlflow.log_metric("train_AUC", metrics["train_AUC"])
+        mlflow.log_metric("train_acc", metrics["train_acc"])
+        mlflow.log_metric("val_AUC", metrics["val_AUC"])
+        mlflow.log_metric("val_acc", metrics["val_acc"])
         mlflow.log_metric("test_AUC", metrics["test_AUC"])
         mlflow.log_metric("test_acc", metrics["test_acc"])
-
 
 
 if __name__ == "__main__":

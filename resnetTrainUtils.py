@@ -9,6 +9,7 @@ from evaluatorLocal import Evaluator
 from models import ResNet18, ResNet50
 from tqdm import trange
 import tomli
+import numpy as np
 
 
 def runTraining(train_dataset, val_dataset, test_dataset, output_dir, config_file):
@@ -139,6 +140,8 @@ def runTraining(train_dataset, val_dataset, test_dataset, output_dir, config_fil
     val_metrics = test(best_model, val_evaluator, val_loader, task, criterion, device)
     test_metrics = test(best_model, test_evaluator, test_loader, task, criterion, device)
 
+    preds = getPredictions(best_model, test_loader, task, device)
+
     train_log = 'train  auc: %.5f  acc: %.5f\n' % (train_metrics[1], train_metrics[2])
     val_log = 'val  auc: %.5f  acc: %.5f\n' % (val_metrics[1], val_metrics[2])
     test_log = 'test  auc: %.5f  acc: %.5f\n' % (test_metrics[1], test_metrics[2])
@@ -151,7 +154,8 @@ def runTraining(train_dataset, val_dataset, test_dataset, output_dir, config_fil
                "val_AUC": val_metrics[1],
                "val_acc": val_metrics[2],
                "test_AUC": test_metrics[1],
-               "test_acc": test_metrics[2]}
+               "test_acc": test_metrics[2],
+               "preds": preds}
 
     return metrics
 
@@ -219,6 +223,43 @@ def test(model, evaluator, data_loader, task, criterion, device, run=None, save_
         test_loss = sum(total_loss) / len(total_loss)
 
         return [test_loss, auc, acc]
+    
+
+def getPredictions(model, data_loader, task, device):
+    # return predictions, targets and the sample ID that they correspond to, for all samples in the data loader
+    model.eval()
+
+    y_score = torch.tensor([]).to(device)
+    y_targets = torch.tensor([]).to(device)
+    sample_ids = []
+
+    with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(data_loader):
+            outputs = model(inputs.to(device))
+
+            # get the sample IDs for the current batch            
+            sample_ids_batch = data_loader.dataset.indices[batch_idx * data_loader.batch_size : (batch_idx + 1) * data_loader.batch_size]
+
+            if task == 'multi-label, binary-class' or task == 'binary-class':
+                targets = targets.to(torch.float32).to(device)
+                m = nn.Sigmoid()
+                outputs = m(outputs).to(device)
+            else:
+                targets = torch.squeeze(targets, 1).long().to(device)
+                m = nn.Softmax(dim=1)
+                outputs = m(outputs).to(device)
+                targets = targets.float().resize_(len(targets), 1)
+
+            
+            y_score = torch.cat((y_score, outputs), 0)
+            y_targets = torch.cat((y_targets, targets))
+            sample_ids.append(sample_ids_batch)
+
+        y_score = y_score.detach().cpu().numpy()
+        y_targets = y_targets.detach().cpu().numpy()
+        sample_ids = np.array(sample_ids).flatten()
+
+        return [y_score, y_targets, sample_ids]
 
 
   

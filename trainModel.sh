@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -o /rds/general/user/kc2322/home/logs
 #PBS -j oe
-#PBS -l walltime=5:00:00
+#PBS -l walltime=7:00:00
 #PBS -l select=1:ncpus=15:mem=80gb:ngpus=1:gpu_type=RTX6000
 
 # bash script to train the ResNet classifier on HPC
